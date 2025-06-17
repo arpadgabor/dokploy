@@ -6,7 +6,7 @@ import {
 } from "@/server/db/schema";
 import {
 	createPort,
-	finPortById,
+	findPortById,
 	removePortById,
 	updatePortById,
 } from "@dokploy/server";
@@ -29,7 +29,7 @@ export const portRouter = createTRPCRouter({
 		}),
 	one: protectedProcedure.input(apiFindOnePort).query(async ({ input }) => {
 		try {
-			return await finPortById(input.portId);
+			return await findPortById(input.portId);
 		} catch (error) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",

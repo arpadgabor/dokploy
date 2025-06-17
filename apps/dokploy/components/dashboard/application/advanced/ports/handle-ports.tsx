@@ -33,9 +33,23 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+const validatePort = (port?: string) => z.coerce.number().int().min(1).max(65535).safeParse(port)
+
+const PortSchema = z.string().refine((value) => {
+	if(value.includes('-') === false) {
+		return validatePort(value).success
+	} else {
+		const range = value.split('-')
+		if(range.length > 2) return false
+
+		const [start, end] = range
+		return validatePort(start).success && validatePort(end).success
+	}
+}, { message: 'Port must be a valid port number or a port range.' })
+
 const AddPortSchema = z.object({
-	publishedPort: z.number().int().min(1).max(65535),
-	targetPort: z.number().int().min(1).max(65535),
+	publishedPort: PortSchema,
+	targetPort: PortSchema,
 	protocol: z.enum(["tcp", "udp"], {
 		required_error: "Protocol is required",
 	}),
@@ -71,16 +85,16 @@ export const HandlePorts = ({
 
 	const form = useForm<AddPort>({
 		defaultValues: {
-			publishedPort: 0,
-			targetPort: 0,
+			publishedPort: '0',
+			targetPort: '0',
 		},
 		resolver: zodResolver(AddPortSchema),
 	});
 
 	useEffect(() => {
 		form.reset({
-			publishedPort: data?.publishedPort ?? 0,
-			targetPort: data?.targetPort ?? 0,
+			publishedPort: data?.publishedPort ?? '0',
+			targetPort: data?.targetPort ?? '0',
 			protocol: data?.protocol ?? "tcp",
 		});
 	}, [form, form.reset, form.formState.isSubmitSuccessful, data]);
@@ -124,7 +138,7 @@ export const HandlePorts = ({
 				<DialogHeader>
 					<DialogTitle>Ports</DialogTitle>
 					<DialogDescription>
-						Ports are used to expose your application to the internet.
+						Ports are used to expose your application to the internet. You can also expose a range of ports.
 					</DialogDescription>
 				</DialogHeader>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
@@ -146,17 +160,10 @@ export const HandlePorts = ({
 											<Input
 												placeholder="1-65535"
 												{...field}
-												value={field.value?.toString() || ""}
+												value={field.value|| ""}
 												onChange={(e) => {
 													const value = e.target.value;
-													if (value === "") {
-														field.onChange(0);
-													} else {
-														const number = Number.parseInt(value, 10);
-														if (!Number.isNaN(number)) {
-															field.onChange(number);
-														}
-													}
+													field.onChange(value);
 												}}
 											/>
 										</FormControl>
@@ -175,17 +182,10 @@ export const HandlePorts = ({
 											<Input
 												placeholder="1-65535"
 												{...field}
-												value={field.value?.toString() || ""}
+												value={field.value || ""}
 												onChange={(e) => {
 													const value = e.target.value;
-													if (value === "") {
-														field.onChange(0);
-													} else {
-														const number = Number.parseInt(value, 10);
-														if (!Number.isNaN(number)) {
-															field.onChange(number);
-														}
-													}
+													field.onChange(value);
 												}}
 											/>
 										</FormControl>

@@ -24,7 +24,7 @@ export const createPort = async (input: typeof apiCreatePort._type) => {
 	return newPort;
 };
 
-export const finPortById = async (portId: string) => {
+export const findPortById = async (portId: string) => {
 	const result = await db.query.ports.findFirst({
 		where: eq(ports.portId, portId),
 	});

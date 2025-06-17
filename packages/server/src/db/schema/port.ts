@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, text, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -12,8 +12,8 @@ export const ports = pgTable("port", {
 		.notNull()
 		.primaryKey()
 		.$defaultFn(() => nanoid()),
-	publishedPort: integer("publishedPort").notNull(),
-	targetPort: integer("targetPort").notNull(),
+	publishedPort: varchar("publishedPort", { length: 11 }).notNull(),
+	targetPort: varchar("targetPort", { length: 11 }).notNull(),
 	protocol: protocolType("protocol").notNull(),
 
 	applicationId: text("applicationId")
@@ -31,8 +31,8 @@ export const portsRelations = relations(ports, ({ one }) => ({
 const createSchema = createInsertSchema(ports, {
 	portId: z.string().min(1),
 	applicationId: z.string().min(1),
-	publishedPort: z.number(),
-	targetPort: z.number(),
+	publishedPort: z.string(),
+	targetPort: z.string(),
 	protocol: z.enum(["tcp", "udp"]).default("tcp"),
 });
 
